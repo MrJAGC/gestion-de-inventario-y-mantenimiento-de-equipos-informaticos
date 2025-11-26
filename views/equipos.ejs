@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard – Equipos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: var(--bs-body-bg);
+      transition: background-color .3s ease, color .3s ease;
+    }
+
+    /* ------ SIDEBAR ------ */
+    .sidebar {
+      width: 240px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: var(--bs-dark-bg-subtle);
+      border-right: 1px solid var(--bs-border-color);
+      padding-top: 1rem;
+      transition: background-color .3s;
+    }
+
+    .sidebar .logo {
+      font-size: 1.5rem;
+      font-weight: 6000;
+      text-align: center;
+      padding-bottom: 1rem;
+    }
+
+    .sidebar .nav-link {
+      padding: 0.7rem 1.2rem;
+      font-size: 0.92rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      border-radius: 0.45rem;
+      transition: background-color .2s;
+    }
+
+    .sidebar .nav-link:hover {
+      background-color: rgba(90, 126, 255, 0.15);
+    }
+
+    .sidebar .nav-link.active {
+      background-color: #4e73df;
+      color: white !important;
+      font-weight: 600;
+    }
+
+    /* ------ MAIN CONTENT ------ */
+    .content {
+      margin-left: 240px;
+      padding: 1.8rem;
+      min-height: 100vh;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    /* ------ NAVBAR SUPERIOR ------ */
+    .topbar {
+      height: 60px;
+      background: var(--bs-body-bg);
+      border-bottom: 1px solid var(--bs-border-color);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 1.5rem;
+      position: fixed;
+      left: 240px;
+      right: 0;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* ------ TARJETA ------ */
+    .card {
+      border: none;
+      border-radius: 0.7rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+      transition: background-color .3s;
+    }
+
+    /* ------ TABLA ------ */
+    .table thead th {
+      background-color: var(--bs-tertiary-bg);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .table tbody tr:hover {
+      background-color: rgba(80, 80, 255, 0.06);
+      transition: background-color .2s;
+    }
+
+    /* ------ SWITCH MODO OSCURO ------ */
+    .switch-theme {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    footer {
+      margin-left: 240px;
+    }
+
+    /* estilos adicionales para la tabla y otros elementos */
+    .toolbar .form-label { font-size: 0.8rem; margin-bottom: 0.15rem; }
+    .toolbar .form-control, .toolbar .form-select { min-width: 160px; padding: 0.25rem 0.5rem; font-size: 0.85rem; height: calc(1.5em + 0.5rem + 2px); }
+    .btn-compact { padding: 0.3rem 0.7rem; font-size: 0.8rem; line-height: 1.2; }
+    .btn-filter { padding: 0.4rem 1rem; font-size: 0.85rem; }
+    .table thead th { white-space: nowrap; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .03em; background-color: #f8f9fa; }
+    .table { --bs-table-cell-padding-y: 0.4rem; --bs-table-cell-padding-x: 0.5rem; }
+    .table td { vertical-align: middle; font-size: 0.85rem; }
+    .table-card { border-radius: 0.375rem; box-shadow: 0 0.1rem 0.35rem rgba(15, 23, 42, 0.05); border: 1px solid #dee2e6; overflow: hidden; }
+    .table tbody tr:hover { background-color: #f9fafb; }
+    .col-acciones { text-align: center; white-space: nowrap; }
+    .col-acciones .btn { margin-bottom: 0.1rem; }
+
+  </style>
+</head>
+
+
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo mb-3">
+      <img src="/img/logo.png" style="height:40px" class="mb-2 rounded"><br>
+      PDS-001
+    </div>
+
+    <nav class="nav flex-column px-2">
+      <a href="/equipos" class="nav-link active"><i class="bi bi-hdd"></i> Equipos</a>
+      <a href="/ubicaciones" class="nav-link"><i class="bi bi-geo-alt"></i> Ubicaciones</a>
+      <a href="/responsables-custodios" class="nav-link"><i class="bi bi-people"></i> Responsables</a>
+      <a href="/personas-mantenimiento" class="nav-link"><i class="bi bi-person-badge"></i> Personas</a>
+
+      <a href="/cargos" class="nav-link"><i class="bi bi-briefcase"></i> Cargos</a>
+
+      <a href="/mantenimientos" class="nav-link"><i class="bi bi-wrench"></i> Mantenimientos</a>
+
+      <% if (currentUser && currentUser.role === 'admin') { %>
+      <a href="/usuarios" class="nav-link"><i class="bi bi-shield-lock"></i> Usuarios</a>
+      <% } %>
+
+      <a href="/mi-perfil" class="nav-link"><i class="bi bi-person-circle"></i> Mi perfil</a>
+    </nav>
+  </aside>
+
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="switch-theme me-4">
+      <input type="checkbox" id="themeToggle">
+      <label for="themeToggle" class="m-0">🌙</label>
+    </div>
+
+    <% if (currentUser) { %>
+      <span class="text-muted me-3 small">
+        <strong><%= currentUser.username %></strong> | <%= currentUser.role %>
+      </span>
+
+      <form method="post" action="/logout">
+        <button class="btn btn-outline-danger btn-sm">Salir</button>
+      </form>
+    <% } %>
+  </div>
+
+
+  <!-- CONTENIDO -->
+  <main class="content pt-5 mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="page-title">Equipos</h1>
+
+      <% if (currentUser && currentUser.role === 'admin') { %>
+      <button id="btnNuevo" class="btn btn-primary btn-sm shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> Nuevo equipo
+      </button>
+      <% } %>
+    </div>
+
+    <p class="text-muted">Gestión del inventario de equipos informáticos.</p>
+
+        <!-- FILTROS -->
+        <div class="card mb-3">
+          <div class="card-body toolbar row g-2 align-items-end">
+            <div class="col-sm-6 col-lg-3">
+              <label class="form-label">Búsqueda</label>
+              <input id="q" class="form-control" placeholder="Código, serial, marca, modelo">
+            </div>
+            <div class="col-sm-6 col-lg-2">
+              <label class="form-label">Estado</label>
+              <select id="fEstado" class="form-select"></select>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+              <label class="form-label">Tipo</label>
+              <select id="fTipo" class="form-select"></select>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+              <label class="form-label">Ubicación</label>
+              <select id="fUbic" class="form-select"></select>
+            </div>
+            <div class="col-sm-6 col-lg-1">
+              <label class="form-label">Responsable</label>
+              <select id="fResp" class="form-select"></select>
+            </div>
+            <div class="col-sm-6 col-lg-2 d-flex justify-content-end gap-2 mt-2 mt-lg-0">
+              <button id="btnLimpiar" class="btn btn-outline-secondary btn-filter">Limpiar</button>
+              <button id="btnFiltrar" class="btn btn-dark btn-filter">Filtrar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLA -->
+        <div class="card table-card">
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Código</th>
+                  <th>Serial</th>
+                  <th>Marca</th>
+                  <th>Modelo</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                  <th>Ubicación</th>
+                  <th>Responsable</th>
+                  <th>Creado</th>
+                  <th>Actualizado</th>
+                  <th class="col-acciones">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <% if (equipos && equipos.length) { %>
+                  <% equipos.forEach(e => { %>
+                    <tr>
+                      <td><%= e.id %></td>
+                      <td class="fw-semibold"><%= e.codigo_inventario %></td>
+                      <td><%= e.serial || '' %></td>
+                      <td><%= e.marca || '' %></td>
+                      <td><%= e.modelo || '' %></td>
+                      <td class="text-uppercase"><%= e.tipo_equipo %></td>
+                      <td><%= (e.estado || '').replaceAll('_',' ') %></td>
+                      <td><%= e.Ubicacion ? e.Ubicacion.identificacion : '' %></td>
+                      <td><%= e.ResponsableCustodio ? (e.ResponsableCustodio.id_area + ' — ' + e.ResponsableCustodio.nombre_area) : '' %></td>
+                      <td><%= e.createdAt ? new Date(e.createdAt).toLocaleString('es-CO',{timeZone:'America/Bogota'}) : '' %></td>
+                      <td><%= e.updatedAt ? new Date(e.updatedAt).toLocaleString('es-CO',{timeZone:'America/Bogota'}) : '' %></td>
+                      <td class="col-acciones">
+                        <a class="btn btn-info btn-compact me-1" href="/mantenimientos?equipoId=<%= e.id %>">Ver Mtto</a>
+                        <% if (currentUser && currentUser.role === 'admin') { %>
+                        <button class="btn btn-warning btn-compact me-1" data-act="edit" data-id="<%= e.id %>">Editar</button>
+                        <button class="btn btn-danger btn-compact" data-act="del" data-id="<%= e.id %>">Eliminar</button>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="12" class="text-center text-muted py-4">Sin registros</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- MODAL -->
+        <% if (currentUser && currentUser.role === 'admin') { %>
+        <div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <form class="modal-content" id="form">
+              <div class="modal-header">
+                <h5 class="modal-title" id="title">Nuevo equipo</h5>
+                <button class="btn-close" data-bs-dismiss="modal" type="button"></button>
+              </div>
+              <div class="modal-body">
+                <input type="hidden" id="id">
+                <div class="row g-3">
+                  <div class="col-md-4"><label class="form-label">Código inventario</label><input id="codigo" class="form-control" required></div>
+                  <div class="col-md-4"><label class="form-label">Serial</label><input id="serial" class="form-control"></div>
+                  <div class="col-md-4"><label class="form-label">Marca</label><input id="marca" class="form-control"></div>
+                  <div class="col-md-4"><label class="form-label">Modelo</label><input id="modelo" class="form-control"></div>
+                  <div class="col-md-4"><label class="form-label">Tipo</label><select id="tipo" class="form-select" required></select></div>
+                  <div class="col-md-4"><label class="form-label">Estado</label><select id="estado" class="form-select" required></select></div>
+                  <div class="col-md-6"><label class="form-label">Ubicación</label><select id="ubicacionId" class="form-select" required></select></div>
+                  <div class="col-md-6"><label class="form-label">Responsable</label><select id="responsableId" class="form-select" required></select></div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary btn-compact" data-bs-dismiss="modal" type="button">Cancelar</button>
+                <button class="btn btn-primary btn-compact" type="submit">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <% } %>
+
+      </div>
+    </main>
+
+  <footer class="mt-auto py-2 border-top bg-light text-center text-body-secondary small">
+    © <%= new Date().getFullYear() %> USTA – Módulo de gestión de inventario
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/equipos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+
+            // Function to set the theme
+            function setTheme(theme) {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('theme', theme);
+            }
+
+            // Event listener for the theme toggle switch
+            themeToggle.addEventListener('change', function () {
+                if (this.checked) {
+                    setTheme('dark');
+                } else {
+                    setTheme('light');
+                }
+            });
+
+            // Get the stored theme from localStorage
+            const storedTheme = localStorage.getItem('theme');
+            if (storedTheme) {
+                setTheme(storedTheme);
+                if (storedTheme === 'dark') {
+                    themeToggle.checked = true;
+                }
+            } else {
+                // If no theme is stored, set the default to light
+                setTheme('light');
+            }
+        });
+    </script>
+</body>
+
+</html>

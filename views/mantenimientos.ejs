@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Mantenimientos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: var(--bs-body-bg);
+      transition: background-color .3s ease, color .3s ease;
+    }
+
+    /* ------ SIDEBAR ------ */
+    .sidebar {
+      width: 240px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: var(--bs-dark-bg-subtle);
+      border-right: 1px solid var(--bs-border-color);
+      padding-top: 1rem;
+      transition: background-color .3s;
+    }
+
+    .sidebar .logo {
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+      padding-bottom: 1rem;
+    }
+
+    .sidebar .nav-link {
+      padding: 0.7rem 1.2rem;
+      font-size: 0.92rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      border-radius: 0.45rem;
+      transition: background-color .2s;
+      color: var(--bs-body-color);
+    }
+
+    .sidebar .nav-link:hover {
+      background-color: rgba(90, 126, 255, 0.15);
+    }
+
+    .sidebar .nav-link.active {
+      background-color: #4e73df;
+      color: white !important;
+      font-weight: 600;
+    }
+
+    /* ------ MAIN CONTENT ------ */
+    .content {
+      margin-left: 240px;
+      padding: 1.8rem;
+      min-height: 100vh;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    /* ------ NAVBAR SUPERIOR ------ */
+    .topbar {
+      height: 60px;
+      background: var(--bs-body-bg);
+      border-bottom: 1px solid var(--bs-border-color);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 1.5rem;
+      position: fixed;
+      left: 240px;
+      right: 0;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* ------ TARJETA ------ */
+    .card {
+      border: none;
+      border-radius: 0.7rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+      transition: background-color .3s;
+    }
+
+    /* ------ TABLA ------ */
+    .table thead th {
+      background-color: var(--bs-tertiary-bg);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .table tbody tr:hover {
+      background-color: rgba(80, 80, 255, 0.06);
+      transition: background-color .2s;
+    }
+
+    .col-acciones {
+      text-align: center;
+      white-space: nowrap;
+      width: 180px;
+    }
+
+    .preview-img {
+      max-height: 100px;
+      border-radius: 8px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    /* ------ SWITCH MODO OSCURO ------ */
+    .switch-theme {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    footer {
+      margin-left: 240px;
+      padding: 1rem 0;
+      text-align: center;
+      color: var(--bs-body-color);
+    }
+  </style>
+</head>
+
+<body class="bg-white">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar d-flex flex-column">
+    <div class="logo mb-3">
+      <img src="/img/logo.png" alt="USTA" style="height:40px; width:auto;" class="rounded mb-1"><br>
+      PDS-001
+    </div>
+    <a href="/equipos" class="nav-link">Equipos</a>
+    <a href="/ubicaciones" class="nav-link">Ubicaciones</a>
+    <a href="/responsables-custodios" class="nav-link">Responsables</a>
+    <a href="/personas-mantenimiento" class="nav-link">Personas</a>
+    <a href="/cargos" class="nav-link">Cargos</a>
+    <a href="/mantenimientos" class="nav-link active">Mantenimientos</a>
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <a href="/usuarios" class="nav-link">Usuarios</a>
+    <% } %>
+    <a href="/mi-perfil" class="nav-link">Mi perfil</a>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <span class="me-3 text-muted small">
+        Usuario: <strong><%= currentUser.username %></strong> |
+        Rol: <strong><%= currentUser.role %></strong>
+      </span>
+      <div class="switch-theme me-4">
+      <input type="checkbox" id="themeToggle">
+      <label for="themeToggle" class="m-0">🌙</label>
+    </div>
+      <form method="post" action="/logout">
+        <button class="btn btn-outline-danger btn-sm">Salir</button>
+      </form>
+    </div>
+    
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
+      <div>
+        <h4 class="page-title">Mantenimientos</h4>
+        <p class="text-muted mb-0">Registro y seguimiento de mantenimientos preventivos y correctivos.</p>
+      </div>
+      <div>
+        <a href="/reportes/mantenimientos.xlsx" class="btn btn-success btn-compact me-2">Exportar Excel</a>
+        <% if (currentUser && currentUser.role === 'admin') { %>
+          <button id="btnNuevo" class="btn btn-primary btn-compact">➕ Nuevo mantenimiento</button>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">Descripción</label>
+            <input id="q" class="form-control" placeholder="Buscar en descripción...">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Código inventario</label>
+            <input id="fCodigo" class="form-control" placeholder="EQ-0001" list="dl_fcodigos">
+            <datalist id="dl_fcodigos"></datalist>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Tipo</label>
+            <select id="fTipo" class="form-select">
+              <option value="">Tipo...</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Prioridad</label>
+            <select id="fPri" class="form-select">
+              <option value="">Prioridad...</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Resultado</label>
+            <select id="fRes" class="form-select">
+              <option value="">Resultado...</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Persona de mantenimiento</label>
+            <input id="fPersona" class="form-control" placeholder="ID / Apellidos / Nombres" list="dl_personas_filter">
+            <datalist id="dl_personas_filter"></datalist>
+          </div>
+          <div class="col-md-3 d-flex gap-2 mt-2 mt-md-0 ms-auto">
+            <button id="btnLimpiar" class="btn btn-outline-secondary btn-filter">Limpiar</button>
+            <button id="btnFiltrar" class="btn btn-dark btn-filter">Filtrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card table-card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Equipo</th>
+                <th>Tipo</th>
+                <th>Prioridad</th>
+                <th>Programada</th>
+                <th>Ejecución</th>
+                <th>Próx. venc.</th>
+                <th>Resultado</th>
+                <th>Responsable</th>
+                <th>Adjunto</th>
+                <th class="col-acciones">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <% mantenimientos.forEach(m => { %>
+                <tr>
+                  <td><%= m.id %></td>
+                  <td><%= m.Equipo ? (m.Equipo.codigo_inventario || ('#'+m.equipoId)) : ('#'+m.equipoId) %></td>
+                  <td><%= m.tipo %></td>
+                  <td><%= m.prioridad %></td>
+                  <td><%= m.fecha_programada || '' %></td>
+                  <td><%= m.fecha_ejecucion || '' %></td>
+                  <td><%= m.proximo_vencimiento || '' %></td>
+                  <td><%= m.resultado || '' %></td>
+                  <td><%= m.PersonaMantenimiento ? (m.PersonaMantenimiento.identificacion + ' — ' + m.PersonaMantenimiento.apellidos + ', ' + m.PersonaMantenimiento.nombres) : '' %></td>
+                  <td>
+                    <% if (m.adjunto_url) { %>
+                      <% if (m.adjunto_url.endsWith('.pdf')) { %>
+                        <a href="<%= m.adjunto_url %>" target="_blank" class="btn btn-sm btn-outline-dark">PDF</a>
+                      <% } else { %>
+                        <a href="<%= m.adjunto_url %>" target="_blank">
+                          <img src="<%= m.adjunto_url %>" alt="Adjunto" class="preview-img">
+                        </a>
+                      <% } %>
+                    <% } %>
+                  </td>
+                  <td class="col-acciones">
+                    <% if (currentUser.role==='admin' ) { %>
+                      <button class="btn btn-sm btn-warning btn-compact me-1" data-act="edit" data-id="<%= m.id %>">Editar</button>
+                      <button class="btn btn-sm btn-danger btn-compact" data-act="del" data-id="<%= m.id %>">Eliminar</button>
+                    <% } else { %>
+                      <span class="text-muted small">Sin permisos</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL NUEVO / EDITAR -->
+    <div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <form class="modal-content" id="form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="title">Nuevo mantenimiento</h5>
+            <button class="btn-close" data-bs-dismiss="modal" type="button"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="id">
+            <div class="row g-3">
+              <!-- campos del formulario aquí (igual que antes) -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary btn-compact" data-bs-dismiss="modal" type="button">Cancelar</button>
+            <button class="btn btn-primary btn-compact" type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <footer>
+      © <%= new Date().getFullYear() %> USTA – Módulo de gestión de inventario y registro de mantenimientos
+    </footer>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/mantenimientos.js"></script>
+   <!-- DARK MODE -->
+  <script>
+    const toggle = document.getElementById("themeToggle");
+    const root = document.documentElement;
+
+    const saved = localStorage.getItem("theme");
+    if (saved) {
+      root.setAttribute("data-bs-theme", saved);
+      toggle.checked = saved === "dark";
+    }
+
+    toggle.addEventListener("change", () => {
+      const theme = toggle.checked ? "dark" : "light";
+      root.setAttribute("data-bs-theme", theme);
+      localStorage.setItem("theme", theme);
+    });
+  </script>
+pt>
+
+</body>
+
+</html>

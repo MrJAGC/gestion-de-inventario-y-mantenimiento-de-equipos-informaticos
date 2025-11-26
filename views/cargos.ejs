@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard – Cargos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: var(--bs-body-bg);
+      transition: background-color .3s ease, color .3s ease;
+    }
+
+    /* ------ SIDEBAR ------ */
+    .sidebar {
+      width: 240px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: var(--bs-dark-bg-subtle);
+      border-right: 1px solid var(--bs-border-color);
+      padding-top: 1rem;
+      transition: background-color .3s;
+    }
+
+    .sidebar .logo {
+      font-size: 1.5rem;
+      font-weight: 6000;
+      text-align: center;
+      padding-bottom: 1rem;
+    }
+
+    .sidebar .nav-link {
+      padding: 0.7rem 1.2rem;
+      font-size: 0.92rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      border-radius: 0.45rem;
+      transition: background-color .2s;
+    }
+
+    .sidebar .nav-link:hover {
+      background-color: rgba(90, 126, 255, 0.15);
+    }
+
+    .sidebar .nav-link.active {
+      background-color: #4e73df;
+      color: white !important;
+      font-weight: 600;
+    }
+
+    /* ------ MAIN CONTENT ------ */
+    .content {
+      margin-left: 240px;
+      padding: 1.8rem;
+      min-height: 100vh;
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    /* ------ NAVBAR SUPERIOR ------ */
+    .topbar {
+      height: 60px;
+      background: var(--bs-body-bg);
+      border-bottom: 1px solid var(--bs-border-color);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 1.5rem;
+      position: fixed;
+      left: 240px;
+      right: 0;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* ------ TARJETA ------ */
+    .card {
+      border: none;
+      border-radius: 0.7rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+      transition: background-color .3s;
+    }
+
+    /* ------ TABLA ------ */
+    .table thead th {
+      background-color: var(--bs-tertiary-bg);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .table tbody tr:hover {
+      background-color: rgba(80, 80, 255, 0.06);
+      transition: background-color .2s;
+    }
+
+    /* ------ SWITCH MODO OSCURO ------ */
+    .switch-theme {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    footer {
+      margin-left: 240px;
+    }
+  </style>
+</head>
+
+
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo mb-3">
+      <img src="/img/logo.png" style="height:40px" class="mb-2 rounded"><br>
+      PDS-001
+    </div>
+
+    <nav class="nav flex-column px-2">
+      <a href="/equipos" class="nav-link"><i class="bi bi-hdd"></i> Equipos</a>
+      <a href="/ubicaciones" class="nav-link"><i class="bi bi-geo-alt"></i> Ubicaciones</a>
+      <a href="/responsables-custodios" class="nav-link"><i class="bi bi-people"></i> Responsables</a>
+      <a href="/personas-mantenimiento" class="nav-link"><i class="bi bi-person-badge"></i> Personas</a>
+
+      <a href="/cargos" class="nav-link active"><i class="bi bi-briefcase"></i> Cargos</a>
+
+      <a href="/mantenimientos" class="nav-link"><i class="bi bi-wrench"></i> Mantenimientos</a>
+
+      <% if (currentUser && currentUser.role === 'admin') { %>
+      <a href="/usuarios" class="nav-link"><i class="bi bi-shield-lock"></i> Usuarios</a>
+      <% } %>
+
+      <a href="/mi-perfil" class="nav-link"><i class="bi bi-person-circle"></i> Mi perfil</a>
+    </nav>
+  </aside>
+
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="switch-theme me-4">
+      <input type="checkbox" id="themeToggle">
+      <label for="themeToggle" class="m-0">🌙</label>
+    </div>
+
+    <% if (currentUser) { %>
+      <span class="text-muted me-3 small">
+        <strong><%= currentUser.username %></strong> | <%= currentUser.role %>
+      </span>
+
+      <form method="post" action="/logout">
+        <button class="btn btn-outline-danger btn-sm">Salir</button>
+      </form>
+    <% } %>
+  </div>
+
+
+  <!-- CONTENIDO -->
+  <main class="content pt-5 mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="page-title">Cargos</h1>
+
+      <% if (currentUser && currentUser.role === 'admin') { %>
+      <button id="btnNuevo" class="btn btn-primary btn-sm shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> Nuevo cargo
+      </button>
+      <% } %>
+    </div>
+
+    <p class="text-muted">Gestión profesional de roles o cargos del personal de mantenimiento.</p>
+
+
+    <!-- FILTROS -->
+    <div class="card mb-4">
+      <div class="card-body row g-3 align-items-end">
+
+        <div class="col-sm-6 col-lg-4">
+          <label class="form-label">Buscar</label>
+          <input id="q" class="form-control" placeholder="Nombre o descripción">
+        </div>
+
+        <div class="col-sm-6 col-lg-3 ms-auto d-flex justify-content-end gap-2">
+          <button id="btnLimpiar" class="btn btn-outline-secondary">Limpiar</button>
+          <button id="btnFiltrar" class="btn btn-dark">Filtrar</button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- TABLA -->
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Tipo</th>
+              <th>Creado</th>
+              <th>Actualizado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody id="tbody">
+            <% if (cargos && cargos.length) { %>
+            <% cargos.forEach(c => { %>
+              <tr>
+                <td><%= c.id %></td>
+                <td><strong><%= c.nombre %></strong></td>
+                <td><%= c.descripcion %></td>
+                <td><%= c.tipo %></td>
+                <td><%= new Date(c.createdAt).toLocaleString('es-CO',{timeZone:'America/Bogota'}) %></td>
+                <td><%= new Date(c.updatedAt).toLocaleString('es-CO',{timeZone:'America/Bogota'}) %></td>
+
+                <td class="text-center">
+                  <% if (currentUser && currentUser.role === 'admin') { %>
+                  <button class="btn btn-warning btn-sm me-1" data-act="edit" data-id="<%= c.id %>">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" data-act="del" data-id="<%= c.id %>">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                  <% } else { %>
+                  <span class="text-muted small">Sin permisos</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+            <% } else { %>
+              <tr><td colspan="7" class="text-center text-muted py-4">Sin registros</td></tr>
+            <% } %>
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+
+
+    <!-- MODAL -->
+    <% if (currentUser && currentUser.role === 'admin') { %>
+    <div class="modal fade" id="modal">
+      <div class="modal-dialog">
+        <form class="modal-content" id="form">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="title">Nuevo cargo</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <input type="hidden" id="id">
+
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input id="nombre" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Descripción</label>
+              <input id="descripcion" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Tipo</label>
+              <select id="tipo" class="form-select">
+                <option value="">(Seleccione)</option>
+                <option value="Interno">Interno</option>
+                <option value="Externo">Externo</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button class="btn btn-primary">Guardar</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+    <% } %>
+
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+  </main>
+
+
+  <footer class="py-3 text-center text-muted small border-top">
+    © <%= new Date().getFullYear() %> USTA — Panel de gestión de inventario y mantenimientos
+  </footer>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/cargos.js"></script>
+
+  <!-- DARK MODE -->
+  <script>
+    const toggle = document.getElementById("themeToggle");
+    const root = document.documentElement;
+
+    const saved = localStorage.getItem("theme");
+    if (saved) {
+      root.setAttribute("data-bs-theme", saved);
+      toggle.checked = saved === "dark";
+    }
+
+    toggle.addEventListener("change", () => {
+      const theme = toggle.checked ? "dark" : "light";
+      root.setAttribute("data-bs-theme", theme);
+      localStorage.setItem("theme", theme);
+    });
+  </script>
+
+</body>
+</html>
